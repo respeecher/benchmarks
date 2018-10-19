@@ -116,8 +116,8 @@ if args.framework == "tf":
     print()
 
     if args.task == "matmul":
-        a = tf.random_normal(shape=(args.batch_size, args.matrix_size))
-        b = tf.random_normal(shape=(args.matrix_size, args.matrix_size))
+        a = tf.random_normal(shape=(args.batch_size, args.matrix_size, args.matrix_size))
+        b = tf.random_normal(shape=(args.batch_size, args.matrix_size, args.matrix_size))
 
         c = tf.matmul(a, b)
 
@@ -158,26 +158,28 @@ elif args.framework == "pytorch":
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if args.task == "matmul":
-        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-            a = torch.zeros(args.batch_size, args.matrix_size).normal_().to(device)
-            b = torch.zeros(args.matrix_size, args.matrix_size).normal_().to(device)
 
-            torch.mm(a, b)
+        a = torch.zeros(args.batch_size, args.matrix_size, args.matrix_size).to(device)
+        b = torch.zeros(args.batch_size, args.matrix_size, args.matrix_size).to(device)
+
+        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
+
+            torch.bmm(a.normal_(), b.normal_())
 
     elif args.task == "conv2d":
 
         conv2d = torch.nn.Conv2d(1, args.depth, args.kernel_size).to(device)
+        input = torch.zeros(args.batch_size, 1, args.input_size_2d, args.input_size_2d).to(device)
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-            input = torch.zeros(args.batch_size, 1, args.input_size_2d, args.input_size_2d).normal_().to(device)
 
-            conv2d(input)
+            conv2d(input.normal_())
 
     elif args.task == "rnn":
 
         rnn = torch.nn.RNN(args.input_size, args.state_size, batch_first=True).to(device)
+        input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).to(device)
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-            input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).normal_().to(device)
 
-            rnn(input)
+            rnn(input.normal_())
