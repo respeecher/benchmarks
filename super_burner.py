@@ -159,8 +159,7 @@ elif args.framework == "pytorch":
 
     def evaluate(t):
         # this is required since pytorch sometimes prefers to do lazy evaluation
-        index = [0] * len(t.size())
-        t[index].cpu()
+        t.cpu()
 
     if args.task == "matmul":
 
