@@ -157,6 +157,11 @@ elif args.framework == "pytorch":
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    def evaluate(t):
+        # this is required since pytorch sometimes prefers to do lazy evaluation
+        index = [0] * len(t.size())
+        t[index].cpu()
+
     if args.task == "matmul":
 
         a = torch.zeros(args.batch_size, args.matrix_size, args.matrix_size).to(device)
@@ -164,7 +169,8 @@ elif args.framework == "pytorch":
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
 
-            torch.bmm(a.normal_(), b.normal_())
+            c = torch.bmm(a.normal_(), b.normal_())
+            evaluate(c)
 
     elif args.task == "conv2d":
 
@@ -173,7 +179,8 @@ elif args.framework == "pytorch":
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
 
-            conv2d(input.normal_())
+            c = conv2d(input.normal_())
+            evaluate(c)
 
     elif args.task == "rnn":
 
@@ -182,4 +189,5 @@ elif args.framework == "pytorch":
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
 
-            rnn(input.normal_())
+            output, state = rnn(input.normal_())
+            evaluate(output)
