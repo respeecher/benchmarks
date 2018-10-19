@@ -1,7 +1,7 @@
 # benchmarks
 Computational/deep learning benchmarks.
 
-Currently, there is the only script called `super_burner.py`. It supports `matmul`, `conv2d` and `rnn` tasks in either `PyTorch` or `TensorFlow`.
+Currently, there is the only script called `super_burner.py`. It supports `matmul`, `conv2d` and `rnn` tasks in both `PyTorch` and `TensorFlow`.
 
 Example usage:
 
