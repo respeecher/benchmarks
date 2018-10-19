@@ -59,6 +59,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+tqdm_columns = 80
+
 
 def formatter(s, style):
     return "{style}{s}\033[00m".format(style=style, s=s)
@@ -120,7 +122,7 @@ if args.framework == "tf":
         c = tf.matmul(a, b)
 
         with tf.Session() as sess:
-            for _ in tqdm(range(args.iterations)):
+            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
                 c.eval()
 
     elif args.task == "conv2d":
@@ -130,7 +132,7 @@ if args.framework == "tf":
         conv = tf.nn.conv2d(input, filter, (1, 1, 1, 1), padding="SAME")
 
         with tf.Session() as sess:
-            for _ in tqdm(range(args.iterations)):
+            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
                 conv.eval()
 
     elif args.task == "rnn":
@@ -144,7 +146,7 @@ if args.framework == "tf":
 
         with tf.Session() as sess:
             tf.global_variables_initializer().run()
-            for _ in tqdm(range(args.iterations)):
+            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
                 output.eval()
 
 elif args.framework == "pytorch":
@@ -156,7 +158,7 @@ elif args.framework == "pytorch":
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if args.task == "matmul":
-        for _ in tqdm(range(args.iterations)):
+        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
             a = torch.zeros(args.batch_size, args.matrix_size).normal_().to(device)
             b = torch.zeros(args.matrix_size, args.matrix_size).normal_().to(device)
 
@@ -166,7 +168,7 @@ elif args.framework == "pytorch":
 
         conv2d = torch.nn.Conv2d(1, args.depth, args.kernel_size).to(device)
 
-        for _ in tqdm(range(args.iterations)):
+        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
             input = torch.zeros(args.batch_size, 1, args.input_size_2d, args.input_size_2d).normal_().to(device)
 
             conv2d(input)
@@ -175,7 +177,7 @@ elif args.framework == "pytorch":
 
         rnn = torch.nn.RNN(args.input_size, args.state_size, batch_first=True).to(device)
 
-        for _ in tqdm(range(args.iterations)):
+        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
             input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).normal_().to(device)
 
             rnn(input)
