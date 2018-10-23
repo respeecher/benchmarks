@@ -17,7 +17,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--task", type=str, required=True,
-    choices=("matmul", "conv2d", "rnn"),
+    choices=("matmul", "conv2d", "rnn", "lstm"),
     help="Task."
 )
 parser.add_argument(
@@ -184,6 +184,16 @@ elif args.framework == "pytorch":
     elif args.task == "rnn":
 
         rnn = torch.nn.RNN(args.input_size, args.state_size, batch_first=True).to(device)
+        input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).to(device)
+
+        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
+
+            output, state = rnn(input.normal_())
+            evaluate(output)
+            
+    elif args.task == "lstm":
+
+        rnn = torch.nn.LSTM(args.input_size, args.state_size, batch_first=True, num_layers=3).to(device)
         input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).to(device)
 
         for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
