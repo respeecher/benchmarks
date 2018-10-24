@@ -74,6 +74,15 @@ def green(s):
 def bold(s):
     return formatter(s, style="\033[01m")
 
+def benchmark(func):
+    with tqdm(total=args.iterations, ncols=tqdm_columns) as pbar:
+        for _ in range(args.iterations):
+            func()
+            pbar.update()
+        pbar.clear()
+        print("Average performance: {:.2f} it/sec"
+              .format(1.0 / pbar.avg_time))
+
 try:
     from tqdm import tqdm
 except ImportError:
@@ -122,8 +131,9 @@ if args.framework == "tf":
         c = tf.matmul(a, b)
 
         with tf.Session() as sess:
-            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
+            def func():
                 c.eval()
+            benchmark(func)
 
     elif args.task == "conv2d":
         input = tf.random_normal(shape=(args.batch_size, args.input_size_2d, args.input_size_2d, 1))
@@ -132,8 +142,9 @@ if args.framework == "tf":
         conv = tf.nn.conv2d(input, filter, (1, 1, 1, 1), padding="SAME")
 
         with tf.Session() as sess:
-            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
+            def func():
                 conv.eval()
+            benchmark(func)
 
     elif args.task == "rnn":
         input = tf.random_normal(shape=(args.batch_size, args.sequence_length, args.input_size))
@@ -146,8 +157,9 @@ if args.framework == "tf":
 
         with tf.Session() as sess:
             tf.global_variables_initializer().run()
-            for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
+            def func():
                 output.eval()
+            benchmark(func)
 
 elif args.framework == "pytorch":
 
@@ -166,37 +178,37 @@ elif args.framework == "pytorch":
         a = torch.zeros(args.batch_size, args.matrix_size, args.matrix_size).to(device)
         b = torch.zeros(args.batch_size, args.matrix_size, args.matrix_size).to(device)
 
-        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-
+        def func():
             c = torch.bmm(a.normal_(), b.normal_())
             evaluate(c)
+        benchmark(func)
 
     elif args.task == "conv2d":
 
         conv2d = torch.nn.Conv2d(1, args.depth, args.kernel_size).to(device)
         input = torch.zeros(args.batch_size, 1, args.input_size_2d, args.input_size_2d).to(device)
 
-        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-
+        def func():
             c = conv2d(input.normal_())
             evaluate(c)
+        benchmark(func)
 
     elif args.task == "rnn":
 
         rnn = torch.nn.RNN(args.input_size, args.state_size, batch_first=True).to(device)
         input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).to(device)
 
-        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-
+        def func():
             output, state = rnn(input.normal_())
             evaluate(output)
+        benchmark(func)
             
     elif args.task == "lstm":
 
         rnn = torch.nn.LSTM(args.input_size, args.state_size, batch_first=True, num_layers=3).to(device)
         input = torch.zeros(args.batch_size, args.sequence_length, args.input_size).to(device)
 
-        for _ in tqdm(range(args.iterations), ncols=tqdm_columns):
-
+        def func():
             output, state = rnn(input.normal_())
             evaluate(output)
+        benchmark(func)
